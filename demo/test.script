@@ -1,0 +1,30 @@
+Script test
+
+Depends /home/jfellus/workspace/pg_nav/pg_nav.pgproject
+
+
+[Modules]
+
+Camera c
+path="/dev/video0"
+
+Hog hog
+step=2
+
+VLAT vlat
+Codebook dico
+K=32
+D=128
+
+DumpMatrix dumpvlat
+
+$inner.script inner
+
+[Links]
+	
+c -> hog
+hog -> vlat
+dico -> vlat
+vlat --> inner.in
+inner.out --> dumpvlat
+

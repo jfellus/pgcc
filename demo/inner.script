@@ -1,0 +1,19 @@
+Script inner
+
+Depends /home/jfellus/workspace/pg_nav/pg_nav.pgproject
+
+
+[Modules]
+
+Camera c
+path="/dev/video0"
+
+Matrix m
+In<Matrix> in
+Out<Image> out
+
+[Links]
+
+in -> m
+c -> m
+m -> out

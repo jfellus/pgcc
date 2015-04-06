@@ -1,0 +1,7 @@
+Script main
+
+[Modules]
+
+$test.script test
+$test2.script test2
+
