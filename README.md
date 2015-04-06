@@ -5,12 +5,12 @@
 Version 1.0 by J.Fellus [apr. 2015]
 
 
-# BUILDING
+## BUILDING
 
 Just type 'make'
 
 
-# RUNNING
+## RUNNING
 
 pgcc <some_script_file> <output_directory>
 
@@ -18,7 +18,7 @@ A C++ Project is generated that fully realizes the given script.
 
 
 
-# FEATURES
+## FEATURES
 
 - PGCC generates handsome and efficient C++ code out of the Neural Net graphs
 - PGCC allows nested networks (macroscripts in Promethe©) without cries  (see demo)
@@ -31,7 +31,7 @@ A C++ Project is generated that fully realizes the given script.
 
 
 
-# CAVEATS
+## CAVEATS
 
 - Lacks timescales (but coming soon !)
 - Lacks syntax converter from old promethe nets and scripts (coming soon !)
@@ -39,7 +39,7 @@ A C++ Project is generated that fully realizes the given script.
 
 
 
-# BUGS
+## BUGS
 
 No known bug
 
