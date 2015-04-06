@@ -7,12 +7,17 @@ Version 1.0 by J.Fellus [apr. 2015]
 
 ## BUILDING
 
-Just type 'make'
+Just type 
+````shell
+make
+````
 
 
 ## RUNNING
 
+````shell
 pgcc <some_script_file> <output_directory>
+````
 
 A C++ Project is generated that fully realizes the given script.
 
