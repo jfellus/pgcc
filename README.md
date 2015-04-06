@@ -21,6 +21,16 @@ pgcc <some_script_file> <output_directory>
 
 A C++ Project is generated that fully realizes the given script.
 
+## START WITH THE DEMO !
+
+````
+cd demo
+./demo.sh
+````
+Then, take a look at the generated `demo/out/` directory, there is a README file inside...
+
+Enjoy !
+JF
 
 
 ## FEATURES
