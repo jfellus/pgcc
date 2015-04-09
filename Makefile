@@ -49,7 +49,7 @@ bin/%.o: %.cpp
 	@mkdir -p `dirname $(@:.o=.d)`
 	@touch $(@:.o=.d)
 	@echo "Compilation : $< "
-	@g++ -std=c++11 $(CXXFLAGS) -MMD -c $< -o $@
+	@g++ $(CXXFLAGS) -MMD -c $< -o $@
 
 bin: 
 	@mkdir -p bin

@@ -9,7 +9,9 @@ Camera c
 path="/dev/video0"
 
 Matrix m
+
 In<Matrix> in
+
 Out<Image> out
 
 [Links]

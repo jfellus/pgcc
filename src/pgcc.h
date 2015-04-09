@@ -14,6 +14,9 @@
 #include "io/reader.h"
 
 
+extern int VERBOSE;
+
+
 void compile_script(const std::string& filename, const std::string& out_dir);
 
 

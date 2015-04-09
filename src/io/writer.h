@@ -54,7 +54,7 @@ public:
 
 
 private:
-	int NESTED_LEVEL = 0;
+	int NESTED_LEVEL;
 
 #include "writer_macros.h"
 

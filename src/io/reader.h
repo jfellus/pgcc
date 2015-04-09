@@ -22,7 +22,7 @@ public:
 
 	Script* read_script(const std::string& filename) {
 		this->filename = filename;
-		std::ifstream f(filename);
+		std::ifstream f(filename.c_str());
 		if(!f.good()) ERROR("No such script file : " << filename);
 		Script* s = read_script(f);
 		f.close();
