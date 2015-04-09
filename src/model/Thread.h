@@ -23,10 +23,22 @@ public:
 	Thread(Script* script, uint id);
 	~Thread();
 
-	void add(Module* m);
+	Module* add(Module* m);
 
 	void consume() {isConsumed = true;}
 	void reset_consume() {isConsumed = false;}
+
+
+
+	////////////////
+	// TIMESCALES //
+	////////////////
+
+	Module* get_timescale_start_module(Module* m);
+	Module* get_timescale_end_module(Module* m);
+
+	void compute_timescales();
+
 };
 
 

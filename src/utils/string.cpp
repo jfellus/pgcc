@@ -105,3 +105,9 @@ std::string str_align(const std::string& s, int nbchars) {
 std::string str_dirname(const std::string& path) {	char s[MAX_PATH];strcpy(s,path.c_str());return dirname((char*)s);}
 std::string str_basename(const std::string& path) {	char s[MAX_PATH];strcpy(s,path.c_str());return basename((char*)s);}
 
+std::string str_repeat(std::string s, int nb) {
+	std::ostringstream ss;
+	for(;nb>0; nb--) ss << s;
+	return ss.str();
+}
+

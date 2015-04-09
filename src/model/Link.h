@@ -16,6 +16,7 @@ public:
 	std::string src_pin;
 	std::string dst_pin;
 	std::string type;
+	bool bNoData;
 
 	Link(Module* src, const std::string& src_pin, Module* dst, const std::string& dst_pin, const std::string& type);
 	~Link();
@@ -24,6 +25,12 @@ public:
 	inline bool is_sync() {return type=="-";}
 	inline bool is_same_thread() {return type=="" || is_virtual();}
 	inline bool is_virtual() {return type=="V"; }
+
+	inline bool has_data() {return !is_virtual() && !bNoData;}
+
+	inline bool is_timescale_link() {
+		return src->is_timescale() || dst->is_timescale();
+	}
 };
 
 

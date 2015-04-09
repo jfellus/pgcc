@@ -10,17 +10,14 @@
 
 
 Module* Script::create_module(const std::string& cls, const std::string& id) {
-	Module* m = new Module(cls, id);
-	modules.add(m);
-	root_modules.add(m);
-	return m;
+	return add_module(new Module(this, cls, id));
 }
 
 Module* Script::create_module_script(const std::string& _filename, const std::string& id) {
 	std::string filename = _filename;
 	if(!file_exists(filename)) filename = TOSTRING(str_dirname(this->filename) << "/" << filename);
 	if(!file_exists(filename)) ERROR("Can't find script file " << filename);
-	Script* s = read_script(filename);
+	Script* s = add_script(read_script(filename));
 	for(uint t=0; t<s->threads.size(); t++) {
 		Module* m = create_module("...", TOSTRING(id << "#" << t));
 		m->the_script = s;

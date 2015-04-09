@@ -10,15 +10,14 @@
 
 
 void compile_script(const std::string& script_file, const std::string& out_dir) {
-	ScriptReader r;
 	CPPWriter w;
 
-	Script* main_script = r.read_script(script_file);
+	Script* main_script = add_script(read_script(script_file));
 	w.set_main_script(main_script);
 
-//	main_script->dump();
+	main_script->dump();
 
 	w.write(out_dir);
 
-//	DBG("DONE !");
+	DBG("DONE !");
 }

@@ -19,6 +19,7 @@ class Thread;
 
 
 Script* read_script(const std::string& filename);
+Script* add_script(Script* s);
 
 #include "Project.h"
 #include "Thread.h"

@@ -54,7 +54,7 @@ public:
 
 
 private:
-
+	int NESTED_LEVEL = 0;
 
 #include "writer_macros.h"
 
@@ -97,7 +97,7 @@ private:
 		f << "#endif // __PG_SCRIPT_" << s->name << "_H\n";
 	}
 
-	void write_header(std::ofstream& f) {copy_file_to("resources/header.txt", f);}
+	void write_header(std::ofstream& f) {NESTED_LEVEL = 0; copy_file_to("resources/header.txt", f);}
 
 	void write_script_includes(Script* s, std::ofstream& f) {
 		COMMENT("INCLUDES");
@@ -191,6 +191,8 @@ private:
 
 	void write_process_module(std::ofstream& f, Link* l) {
 		Module* m = l->dst;
+		if(m->cls=="$START_TIMESCALE") {write_process_start_timescale(f, l); return; }
+		else if(m->cls=="$END_TIMESCALE") {write_process_end_timescale(f, l); return; }
 		std::string process = "process";
 		std::string id = m->id;
 		if(str_has(id, "#")) {
@@ -208,9 +210,10 @@ private:
 		if(!m->is_processable()) return;
 
 		// Call process()
-		f << "\t\t" << id << (!l->dst_pin.empty() ? "." : "") << l->dst_pin << "." << process << "(";
+		f << REPEAT_STR("\t", NESTED_LEVEL) << id << (!l->dst_pin.empty() ? "." : "") << l->dst_pin << "." << process << "(";
 		if(l->src) {
 			for(uint i=0; i<m->ins.size(); i++) {
+				if(m->ins[i]->is_timescale_link()) continue;
 				if(i!=0) f << ", ";
 				f << m->ins[i]->src->id;
 				if(!m->ins[i]->src_pin.empty()) f << "." << m->ins[i]->src_pin;
@@ -245,7 +248,7 @@ private:
 			}
 
 			// Call process_thread_xxx()
-			f << "\t\t" << id << ".process_thread_" <<  t << "();\n";
+			JJ(id << ".process_thread_" <<  t << "();");
 
 			// Handle sync output links
 			for(uint i=0; i<m->outs.size(); i++) {
@@ -254,6 +257,18 @@ private:
 				JJ("SEM_SEND(" << SM(id) << ", " << SM(l->dst->id) << ");");
 			}
 		}
+	}
+
+	void write_process_start_timescale(std::ofstream& f, Link* l) {
+		std::string v; v += (char)('i'+NESTED_LEVEL);
+		int nb_iterations = l->dst->script->get_timescale_iterations(l->dst->timescale);
+		JJ("for (int " << v << "=0; " << v << "<" << nb_iterations << "; " << v << "++) {");
+		NESTED_LEVEL++;
+	}
+
+	void write_process_end_timescale(std::ofstream& f, Link* l) {
+		NESTED_LEVEL--;
+		JJ("}");
 	}
 
 	void write_semaphores_decls(Script* s, std::ofstream &f) {

@@ -112,4 +112,7 @@ std::string str_align(const std::string& s, int nbchars);
 std::string str_dirname(const std::string& path);
 std::string str_basename(const std::string& path);
 
+std::string str_repeat(std::string s, int nb);
+#define REPEAT_STR(x, nb) str_repeat(TOSTRING(x),nb)
+
 #endif /* PG_STRING_H_ */

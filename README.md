@@ -38,6 +38,7 @@ JF
 - PGCC generates handsome and efficient C++ code out of the Neural Net graphs
 - PGCC allows nested networks (macroscripts in Promethe©) without cries  (see demo)
 - PGCC takes care of parallel execution for you by infering async/sync/sequential links (see demo)
+- PGCC automatically generate loops for defined timescales (and takes care of eventual parallelism to split them).
 - PGCC automatically puts semaphores for links specified as synchronous. 
 - All generated C++ code has maximal inlining opportunities, 
 - PGCC takes benefit of every GCC functionalities and features (easy debugging, errors and warning reporting in 
@@ -48,7 +49,7 @@ JF
 
 ## CAVEATS
 
-- Lacks timescales (but coming soon !)
+- For now, timescales are not compatible with synchronized links (but coming soon !)
 - Lacks syntax converter from old promethe nets and scripts (coming soon !)
 - Lacks graphical editor (but Coeos++ is just 'round the corner...)
 

@@ -26,5 +26,7 @@ void usage() {
 
 int main(int argc, char **argv) {
 	if(argc<3) usage();
+	try {
 	compile_script(argv[1],argv[2]);
+	} catch(std::runtime_error&) {exit(1);}
 }

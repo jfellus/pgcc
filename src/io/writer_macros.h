@@ -14,18 +14,18 @@
 #define INCLUDE(path)     f << "#include \"" << path << "\"\n";
 #define ________          f << "\n";
 #define COMMENT(x)        write_cpp_comment_box(f, TOSTRING(x)); f << "\n";
-#define FUNCTION(ret,name,params) f << #ret << " " << TOSTRING(name) << #params << " {\n";
+#define FUNCTION(ret,name,params) do {f << #ret << " " << TOSTRING(name) << #params << " {\n"; NESTED_LEVEL++; } while(0)
 #define I(x)                      f << "\t" << #x << "\n";
 #define J(x)                      f << "\t" << TOSTRING(x) << "\n";
-#define II(x)                      f << "\t\t" << #x << "\n";
-#define JJ(x)                      f << "\t\t" << TOSTRING(x) << "\n";
-#define END_FUNCTION() f << "}\n\n";
-#define CLASS(c)		f << "class " << TOSTRING(c) << " {\n" << "public:\n";
-#define END_CLASS() f << "};\n\n";
-#define METHOD(ret,x,params) f << "\t" << #ret << " " << TOSTRING(x) << #params << " {\n";
-#define END_METHOD() f << "\t}\n\n";
-#define CONSTRUCTOR(x,params) f << "\t" << TOSTRING(x) << #params << " {\n";
-#define END_CONSTRUCTOR() f << "\t}\n\n";
+#define II(x)                      f << REPEAT_STR("\t", NESTED_LEVEL) << #x << "\n"
+#define JJ(x)                      f << REPEAT_STR("\t", NESTED_LEVEL) << TOSTRING(x) << "\n"
+#define END_FUNCTION() do {f << "}\n\n"; NESTED_LEVEL--;} while(0)
+#define CLASS(c)		do {f << "class " << TOSTRING(c) << " {\n" << "public:\n"; NESTED_LEVEL++; } while(0)
+#define END_CLASS() do{f << "};\n\n"; NESTED_LEVEL--; } while(0)
+#define METHOD(ret,x,params) do{f << "\t" << #ret << " " << TOSTRING(x) << #params << " {\n";NESTED_LEVEL++; } while(0)
+#define END_METHOD()  do{f << "\t}\n\n";NESTED_LEVEL--; } while(0)
+#define CONSTRUCTOR(x,params) do{f << "\t" << TOSTRING(x) << #params << " {\n";NESTED_LEVEL++; } while(0)
+#define END_CONSTRUCTOR() do{f << "\t}\n\n";NESTED_LEVEL--; } while(0)
 
 
 

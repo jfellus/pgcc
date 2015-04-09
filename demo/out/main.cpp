@@ -12,14 +12,11 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "scripts/main.h"
-#include "scripts/test.h"
-#include "scripts/inner.h"
-#include "scripts/test2.h"
+#include "scripts/timescales.h"
 
 
 // The main script 
-Script_main main_script;
+Script_timescales main_script;
 
 
 /////////////
@@ -29,8 +26,6 @@ Script_main main_script;
 void* f_thread_0(void*) { for(;;) main_script.process_thread_0(); return 0; }
 void* f_thread_1(void*) { for(;;) main_script.process_thread_1(); return 0; }
 void* f_thread_2(void*) { for(;;) main_script.process_thread_2(); return 0; }
-void* f_thread_3(void*) { for(;;) main_script.process_thread_3(); return 0; }
-void* f_thread_4(void*) { for(;;) main_script.process_thread_4(); return 0; }
 
 
 //////////
@@ -42,7 +37,5 @@ int main(void) {
 	pthread_t th0; pthread_create(&th0, 0, f_thread_0, 0);
 	pthread_t th1; pthread_create(&th1, 0, f_thread_1, 0);
 	pthread_t th2; pthread_create(&th2, 0, f_thread_2, 0);
-	pthread_t th3; pthread_create(&th3, 0, f_thread_3, 0);
-	pthread_t th4; pthread_create(&th4, 0, f_thread_4, 0);
 }
 

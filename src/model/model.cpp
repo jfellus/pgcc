@@ -14,3 +14,8 @@ array<Project*> projects;
 Script* read_script(const std::string& filename) {
 	ScriptReader r; return r.read_script(filename);
 }
+
+Script* add_script(Script* s) {
+	scripts.add(s);
+	return s;
+}
