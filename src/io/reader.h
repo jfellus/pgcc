@@ -92,9 +92,16 @@ public:
 		std::string dstpin = "";
 		if(str_has(ssrc, ".")) { srcpin = str_trim(str_after(ssrc, ".")); ssrc = str_trim(str_before(ssrc, ".")); }
 		if(str_has(sdst, ".")) { dstpin = str_trim(str_after(sdst, ".")); sdst = str_trim(str_before(sdst, ".")); }
+
 		Module* src = script->get_module(ssrc);
 		Module* dst = script->get_module(sdst);
-		return script->connect(src,srcpin,dst,dstpin, stype);
+		if(!src) ERROR("No such source module : " << ssrc);
+		if(!dst) ERROR("No such source module : " << sdst);
+
+		Link* l = script->connect(src,srcpin,dst,dstpin, stype);
+		if(stype=="0") l->bNoData = true;
+
+		return l;
 	}
 
 };

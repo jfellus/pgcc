@@ -15,7 +15,7 @@ class CPPWriter {
 public:
 	Script* main_script;
 public:
-	CPPWriter() { main_script = NULL; }
+	CPPWriter() { NESTED_LEVEL = 0; main_script = NULL; }
 
 	void set_main_script(Script* main_script) { this->main_script = main_script; }
 
@@ -30,8 +30,10 @@ public:
 
 		// Copy core files
 		SYSTEM("cp resources/sync_semaphores.h " << dir << "/utils");
-		SYSTEM("cp resources/Makefile " << dir);
 		SYSTEM("cp resources/README " << dir);
+
+		// Set makefile params
+		create_makefile(TOSTRING(dir << "/Makefile"), "resources/Makefile");
 
 		// Create CPP files
 		for(uint i=0; i<scripts.size(); i++) {
@@ -58,11 +60,28 @@ private:
 
 #include "writer_macros.h"
 
+	void create_makefile(const std::string& outfile, const std::string& src) {
+		std::ofstream f(outfile.c_str());
+		f << "LD_FLAGS:=";
+		for(uint i=0; i<scripts.size(); i++)
+			for(uint j=0; j<scripts[i]->depends.size(); j++)
+				f << scripts[i]->depends[j]->get_ld_str();
+		f << "\n";
+		f << "CFLAGS:=";
+		for(uint i=0; i<scripts.size(); i++)
+			for(uint j=0; j<scripts[i]->depends.size(); j++)
+				f << scripts[i]->depends[j]->get_cflags_str();
+		f << "\n";
+		copy_file_to(src, f);
+		f.close();
+	}
+
 	void write_cpp_main(std::ofstream& f) {
 		HEADER();
 		________
 		INCLUDE_SYS("pthread.h");
 		INCLUDE_SYS("unistd.h");
+		INCLUDE_SYS("pg.h");
 		________
 		for(uint i=0; i<scripts.size(); i++) INCLUDE("scripts/" << scripts[i]->name << ".h");
 		________
@@ -73,7 +92,7 @@ private:
 		________
 		COMMENT("THREADS");
 		for(uint t=0; t<main_script->threads.size(); t++) {
-			f << "void* f_thread_" << t << "(void*) { for(;;) main_script.process_thread_" << t << "(); return 0; }\n";
+			f << "void* f_thread_" << t << "(void*) { try { for(;;) main_script.process_thread_" << t << "(); } catch(std::runtime_error& x) { PRINT_FATAL_ERROR(x.what()); } return 0;}\n";
 		}
 		________
 		________
@@ -82,6 +101,7 @@ private:
 		I(main_script.init(););
 		for(uint t=0; t<main_script->threads.size(); t++)
 			J("pthread_t th"<<t<<"; pthread_create(&th" << t << ", 0, f_thread_" << t << ", 0);");
+		for(uint t=0; t<main_script->threads.size(); t++) J("pthread_join(th"<<t<<",0);");
 		END_FUNCTION();
 	}
 
@@ -213,7 +233,7 @@ private:
 		f << REPEAT_STR("\t", NESTED_LEVEL) << id << (!l->dst_pin.empty() ? "." : "") << l->dst_pin << "." << process << "(";
 		if(l->src) {
 			for(uint i=0; i<m->ins.size(); i++) {
-				if(m->ins[i]->is_timescale_link()) continue;
+				if(!m->ins[i]->has_data()) continue;
 				if(i!=0) f << ", ";
 				f << m->ins[i]->src->id;
 				if(!m->ins[i]->src_pin.empty()) f << "." << m->ins[i]->src_pin;

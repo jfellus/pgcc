@@ -1,7 +1,7 @@
 all: main
 
 main: main.cpp scripts/*.h utils/*.h
-	g++ -O3 -o main main.cpp -lpthread
+	g++ -O3 -o main main.cpp -lpthread -I~/.pgcc/includes
 	
 clean: 
 	@rm -rf main

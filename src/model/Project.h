@@ -17,9 +17,11 @@ public:
 	array<std::string> libraries;
 	array<std::string> ld_paths;
 	array<std::string> include_paths;
+	array<std::string> pkgconfigs;
 
 public:
 	Project(const std::string& filename) : filename(filename) {
+		ld_paths.add(str_dirname(filename));
 		read(filename);
 	}
 
@@ -37,8 +39,13 @@ public:
 			if(line.empty()) continue;
 			if(str_starts_with(line, "Include")) includes.add(resolve(str_trim(str_after(line, "Include"))));
 			else if(str_starts_with(line, "LDPath")) ld_paths.add(resolve(str_trim(str_after(line, "LDPath"))));
-			else if(str_starts_with(line, "Library")) libraries.add(resolve(str_trim(str_after(line, "Library"))));
+			else if(str_starts_with(line, "Library")) {
+				std::string s = str_trim(str_after(line, "Library"));
+				if(str_ends_with(s, ".so")) libraries.add(resolve(s));
+				else libraries.add(s);
+			}
 			else if(str_starts_with(line, "IncludePath")) include_paths.add(resolve(str_trim(str_after(line, "IncludePath"))));
+			else if(str_starts_with(line, "Pkgconfig")) pkgconfigs.add(str_trim(str_after(line, "Pkgconfig")));
 		}
 	}
 
@@ -46,6 +53,37 @@ public:
 		if(str_starts_with(path, "/")) return path;
 		return TOSTRING(str_dirname(filename) << "/" << path);
 	}
+
+	std::string get_ld_str() {
+		std::ostringstream ss;
+		for(uint i=0; i<ld_paths.size(); i++) ss << " -L" << ld_paths[i];
+		for(uint i=0; i<libraries.size(); i++) {
+			if(str_ends_with(libraries[i], ".so")) {
+				std::string path = libraries[i].substr(0,libraries[i].rfind("/"));
+				ss << " -L" << path;
+				ss << " -Wl,-rpath," << path;
+				ss << " -l" << str_between(str_basename(libraries[i]), "lib", ".so");
+			}
+			else ss << " -l" << libraries[i];
+		}
+		if(pkgconfigs.size()>0) {
+			ss << " `pkg-config --libs";
+			for(uint i=0; i<pkgconfigs.size(); i++) ss << " " << pkgconfigs[i];
+			ss << "`";
+		}
+		return ss.str();
+	}
+
+	std::string get_cflags_str() {
+		std::ostringstream ss;
+		if(pkgconfigs.size()>0) {
+			ss << " `pkg-config --cflags";
+			for(uint i=0; i<pkgconfigs.size(); i++) ss << " " << pkgconfigs[i];
+			ss << "`";
+		}
+		return ss.str();
+	}
+
 };
 
 

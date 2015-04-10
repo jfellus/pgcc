@@ -11,6 +11,7 @@
 
 #include <pthread.h>
 #include <unistd.h>
+#include <pg.h>
 
 #include "scripts/timescales.h"
 
@@ -23,9 +24,9 @@ Script_timescales main_script;
 // THREADS //
 /////////////
 
-void* f_thread_0(void*) { for(;;) main_script.process_thread_0(); return 0; }
-void* f_thread_1(void*) { for(;;) main_script.process_thread_1(); return 0; }
-void* f_thread_2(void*) { for(;;) main_script.process_thread_2(); return 0; }
+void* f_thread_0(void*) { try { for(;;) main_script.process_thread_0(); } catch(std::runtime_error& x) { PRINT_FATAL_ERROR(x.what()); } return 0;}
+void* f_thread_1(void*) { try { for(;;) main_script.process_thread_1(); } catch(std::runtime_error& x) { PRINT_FATAL_ERROR(x.what()); } return 0;}
+void* f_thread_2(void*) { try { for(;;) main_script.process_thread_2(); } catch(std::runtime_error& x) { PRINT_FATAL_ERROR(x.what()); } return 0;}
 
 
 //////////
