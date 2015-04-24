@@ -1,4 +1,4 @@
-
+CFLAGS=
 
 
 ##################### don't edit below this line unless you're a GNU make's expert ! ##########
@@ -6,7 +6,7 @@
 all: main
 
 main: main.cpp scripts/*.h utils/*.h
-	g++ -O3 -o main main.cpp -lpthread -I$(HOME)/.pgcc/includes $(CFLAGS) $(LD_FLAGS)
+	g++ -g -O3 -o main main.cpp -lpthread -I$(HOME)/.pgcc/includes $(CFLAGS) $(LD_FLAGS)
 	
 clean: 
 	@rm -rf main

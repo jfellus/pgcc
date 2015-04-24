@@ -1,0 +1,24 @@
+Script basic_io
+
+Depends /home/jfellus/workspace/pg_basics/pg_basics.pgproject
+
+Timescale 1 x2 0
+
+[Modules]
+
+ReadFileLines f
+filename="/home/jfellus/.bashrc"
+
+PrintMessage print
+timescale=1
+
+WriteFileLines out
+filename="test.txt"
+
+Sleep s
+
+[Links]
+
+s -0> f
+f -> print
+f -> out

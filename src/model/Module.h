@@ -58,6 +58,14 @@ public:
 
 	inline bool is_timescale() {return cls[0]=='$';}
 
+	inline std::string get_special_process_statement() {
+		if(str_starts_with(cls, "_expr<")) {
+			std::string type = str_between(cls, "<", ">");
+			return TOSTRING(type << " " << id << " = " << params["_expr"] << ";");
+		}
+		return "";
+	}
+
 	void dump();
 
 };

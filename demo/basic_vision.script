@@ -1,0 +1,86 @@
+Script basic_vision
+
+Depends /home/jfellus/workspace/pg_vision/pg_vision.pgproject
+Depends /home/jfellus/workspace/pg_basics/pg_basics.pgproject
+Depends /home/jfellus/workspace/pg_gtk/pg_gtk.pgproject
+Depends /home/jfellus/workspace/pg_learning/pg_learning.pgproject
+Depends /home/jfellus/workspace/pg_algebra/pg_algebra.pgproject
+
+[Modules]
+
+Camera c
+path="/dev/video1"
+
+Grayscale g
+
+Gradient gradient
+alpha=0.8
+
+Ptcg ptcg
+theta1=3
+theta2=1.5
+mask_radius=4
+competition_radius=30
+threshold=0.01
+
+GiveFocuspoints focuspoints
+threshold=0
+
+LogPolar lp
+
+Normalize norm
+
+SVQ vq
+K=32
+
+kMax km
+K=1
+
+ThetaPopulationCoding theta
+nbNeurons=30
+
+SigmaPi prph
+
+RowVector pcpattern
+
+SVQ pc
+K=3
+
+
+#GtkImageOverlayText v2
+
+#GtkImageOverlay vprph
+#title="PRPH"
+
+#GtkImageOverlay vtheta
+#title="THETA"
+
+GtkPlot vpc
+w=20
+
+[Links]
+
+c -> g
+g -> gradient
+gradient -> ptcg
+ptcg -> focuspoints
+g -> lp
+focuspoints -> lp
+lp -> norm
+norm -> vq
+vq -> km
+focuspoints -> theta
+km -> prph
+theta -> prph
+prph -> pcpattern
+pcpattern -> pc
+
+
+
+
+#c -> v2
+#vq.winners -> v2
+#focuspoints -> v2
+#prph -> vprph
+#theta -> vtheta
+pc -> vpc

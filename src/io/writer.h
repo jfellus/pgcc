@@ -10,12 +10,15 @@
 
 #include "../utils/utils.h"
 #include "../model/model.h"
+#include "../model/ModulesPrototypes.h"
 
 class CPPWriter {
 public:
 	Script* main_script;
+	ModulesPrototypes* modules_prototypes;
+
 public:
-	CPPWriter() { NESTED_LEVEL = 0; main_script = NULL; }
+	CPPWriter() { NESTED_LEVEL = 0; main_script = NULL; modules_prototypes = 0;}
 
 	void set_main_script(Script* main_script) { this->main_script = main_script; }
 
@@ -34,6 +37,9 @@ public:
 
 		// Set makefile params
 		create_makefile(TOSTRING(dir << "/Makefile"), "resources/Makefile");
+
+		// Read included functions prototypes
+	//	read_prototypes(TOSTRING(dir << "/prototypes.d"));
 
 		// Create CPP files
 		for(uint i=0; i<scripts.size(); i++) {
@@ -153,7 +159,8 @@ private:
 		CONSTRUCTOR("Script_" << s->name, ());
 		for(uint i=0; i<s->modules.size(); i++) {
 			for(std::map<std::string, std::string>::iterator j = s->modules[i]->params.begin(); j!=s->modules[i]->params.end(); j++) {
-				JJ(s->modules[i]->id << "." << (*j).first << " = " << (*j).second << ";");
+				if(isalpha((*j).first[0]))
+					JJ(s->modules[i]->id << "." << (*j).first << " = " << (*j).second << ";");
 			}
 		}
 		END_CONSTRUCTOR();
@@ -229,16 +236,13 @@ private:
 
 		if(!m->is_processable()) return;
 
+		std::string special = m->get_special_process_statement();
+		if(!special.empty()) { JJ(special); return; }
+
+
 		// Call process()
 		f << REPEAT_STR("\t", NESTED_LEVEL) << id << (!l->dst_pin.empty() ? "." : "") << l->dst_pin << "." << process << "(";
-		if(l->src) {
-			for(uint i=0; i<m->ins.size(); i++) {
-				if(!m->ins[i]->has_data()) continue;
-				if(i!=0) f << ", ";
-				f << m->ins[i]->src->id;
-				if(!m->ins[i]->src_pin.empty()) f << "." << m->ins[i]->src_pin;
-			}
-		}
+		if(l->src) write_process_module_args(f, m);
 		f << ");\n";
 
 		// Handle sync output links
@@ -246,6 +250,19 @@ private:
 			Link* l = m->outs[i];
 			if(!l->is_sync()) continue;
 			JJ("SEM_SEND(" << SM(m->id) << ", " << SM(l->dst->id) << ");");
+		}
+	}
+
+	void write_process_module_args(std::ofstream& f, Module* m) {
+		std::string args = "";
+		if(modules_prototypes) args = modules_prototypes->compute_params_str(m);
+		if(args.empty()) {
+			for(uint i=0; i<m->ins.size(); i++) {
+				if(!m->ins[i]->has_data()) continue;
+				if(i!=0) f << ", ";
+				f << m->ins[i]->src->id;
+				if(!m->ins[i]->src_pin.empty()) f << "." << m->ins[i]->src_pin;
+			}
 		}
 	}
 
@@ -302,6 +319,37 @@ private:
 	}
 
 	inline std::string SM(const std::string& id) {	return str_replace(str_before(id, "#"), ".", "_");}
+
+
+	void read_prototypes(const std::string& outfile) {
+		if(modules_prototypes) return;
+
+		// Write fake CPP main and fake script
+		std::string fakecpp = TOSTRING(str_dirname(outfile) << "/fake.cpp");
+		std::string fakeh = TOSTRING(str_dirname(outfile) << "/scripts/fake.h");
+		std::ofstream ffakecpp(fakecpp.c_str()), ffakeh(fakeh.c_str());
+		for(uint i=0; i<scripts.size(); i++) write_script_includes(scripts[i], ffakeh);
+		ffakecpp << "#include \"scripts/fake.h\"\nvoid main() {}\n";
+		ffakecpp.close();
+		ffakeh.close();
+
+		// List process() methods prototypes
+		SYSTEM("./resources/list_process_prototypes.sh " << outfile << " fake.cpp -I~/.pgcc/includes");
+
+		modules_prototypes = new ModulesPrototypes();
+
+		std::string line;
+		std::ifstream f(outfile.c_str());
+		std::string cls;
+		while(getline(f,line)) {
+			if(str_starts_with(line, "class")) cls = str_trim(str_after(line, "class"));
+			else if(line == "process") modules_prototypes->create_process(cls);
+			else modules_prototypes->create_param(cls, line);
+		}
+		f.close();
+
+		SYSTEM("rm -f " << fakecpp << " " << fakeh);
+	}
 
 #include "writer_macros.h"
 

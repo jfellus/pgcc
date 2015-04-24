@@ -38,6 +38,8 @@ LDFLAGS := -fPIC -rdynamic
 DEPENDS = $(OBJS:.o=.d)    
 
 
+install:
+	sudo ln -fs `pwd`/resources/pgcc.sh /usr/local/bin/pgcc 
 
 $(EXECUTABLE) : $(OBJS)          
 	@echo "Build executable $@"

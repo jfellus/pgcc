@@ -18,6 +18,8 @@ public:
 	array<std::string> ld_paths;
 	array<std::string> include_paths;
 	array<std::string> pkgconfigs;
+	array<std::string> cflags;
+	array<std::string> ldflags;
 
 public:
 	Project(const std::string& filename) : filename(filename) {
@@ -46,6 +48,8 @@ public:
 			}
 			else if(str_starts_with(line, "IncludePath")) include_paths.add(resolve(str_trim(str_after(line, "IncludePath"))));
 			else if(str_starts_with(line, "Pkgconfig")) pkgconfigs.add(str_trim(str_after(line, "Pkgconfig")));
+			else if(str_starts_with(line, "CFLAG")) cflags.add(str_trim(str_after(line, "CFLAG")));
+			else if(str_starts_with(line, "LDFLAG")) ldflags.add(str_trim(str_after(line, "LDFLAG")));
 		}
 	}
 
@@ -71,6 +75,7 @@ public:
 			for(uint i=0; i<pkgconfigs.size(); i++) ss << " " << pkgconfigs[i];
 			ss << "`";
 		}
+		for(uint i=0; i<ldflags.size(); i++) ss << " " << ldflags[i];
 		return ss.str();
 	}
 
@@ -81,6 +86,7 @@ public:
 			for(uint i=0; i<pkgconfigs.size(); i++) ss << " " << pkgconfigs[i];
 			ss << "`";
 		}
+		for(uint i=0; i<cflags.size(); i++) ss << " " << cflags[i];
 		return ss.str();
 	}
 
