@@ -1,0 +1,110 @@
+Script basic_visionee
+Depends /home/jfellus/workspace/pg_vision/pg_vision.pgproject
+Depends /home/jfellus/workspace/pg_basics/pg_basics.pgproject
+Depends /home/jfellus/workspace/pg_gtk/pg_gtk.pgproject
+Depends /home/jfellus/workspace/pg_learning/pg_learning.pgproject
+Depends /home/jfellus/workspace/pg_algebra/pg_algebra.pgproject
+
+[Modules]
+Camera camera
+@x = 42.97090956985642
+@y = 90.09426984253639
+path = "/dev/video0"
+
+Grayscale grayscale
+@x = 115.50875399144866
+@y = 91.32714477176808
+
+Gradient gradient
+@x = 146.2071941023945
+@y = 40.680352696231346
+alpha = 0.8
+
+Ptcg ptcg
+@x = 189.31368461332366
+@y = 40.098797502367624
+theta1 = 3
+theta2 = 1.5
+mask_radius = 4
+competition_radius = 30
+threshold = 0.01
+
+GiveFocuspoints focuspoints
+@x = 240.31342238467678
+@y = 41.07540311497465
+threshold = 0
+
+LogPolar logpol
+@x = 289.5895509713528
+@y = 92.49709630114657
+
+Normalize L2_normalization
+@x = 358.0928926248006
+@y = 91.08286115808674
+
+SVQ SVQ_Landmarks
+@x = 441.3499885736145
+@y = 91.38319458534669
+K = 32
+
+kMax kmax
+@x = 500.90411978926505
+@y = 92.21567247849595
+K = 1
+
+ThetaPopulationCoding theta
+@x = 416.0891352319902
+@y = 38.53952823122961
+nbNeurons = 30
+
+SigmaPi PrPh
+@x = 563.9792622457383
+@y = 66.45031674107639
+
+RowVector place_vector
+@x = 627.9958470168987
+@y = 67.59509453167077
+
+SVQ SVQ_PlaceCells
+@x = 703.6715359233353
+@y = 65.91538991584505
+K = 3
+
+GtkPlot ViewerPlaceCells
+@x = 797.7973675715688
+@y = 65.50918909756864
+w = 20
+
+
+[Links]
+camera -> grayscale
+
+grayscale -> gradient
+
+gradient -> ptcg
+
+ptcg -> focuspoints
+
+grayscale -> logpol
+
+focuspoints -> logpol
+
+logpol -> L2_normalization
+
+L2_normalization -> SVQ_Landmarks
+
+SVQ_Landmarks -> kmax
+
+focuspoints -> theta
+
+kmax -> PrPh
+
+theta -> PrPh
+
+PrPh -> place_vector
+
+place_vector -> SVQ_PlaceCells
+
+SVQ_PlaceCells -> ViewerPlaceCells
+
+

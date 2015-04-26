@@ -3,3 +3,4 @@
 .settings/
 pgcc
 bin/
+demo/basic_io/*

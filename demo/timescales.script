@@ -1,0 +1,33 @@
+Script timescales
+
+Depends /home/jfellus/workspace/pg_nav/pg_nav.pgproject
+
+Timescale 1 x100 0
+
+[Modules]
+
+Avant avant1
+path="/dev/video0"
+
+Avant avant2
+zob="t2"
+
+Dedans dedans1
+timescale=1
+
+Dedans dedans2
+timescale=1
+
+
+Apres apres1
+
+
+
+
+
+[Links]
+
+avant1 --> dedans1
+avant2 --> dedans2
+dedans1 -> apres1
+dedans2 -> apres1

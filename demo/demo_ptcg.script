@@ -1,0 +1,47 @@
+Script basic_vision
+
+Depends /home/jfellus/workspace/pg_vision/pg_vision.pgproject
+Depends /home/jfellus/workspace/pg_basics/pg_basics.pgproject
+Depends /home/jfellus/workspace/pg_gtk/pg_gtk.pgproject
+Depends /home/jfellus/workspace/pg_learning/pg_learning.pgproject
+
+
+[Modules]
+
+Camera c
+path="/dev/video1"
+
+Grayscale g
+
+Gradient gradient
+alpha=0.7
+
+Ptcg ptcg
+theta1=6
+theta2=2
+mask_radius=4
+competition_radius=30
+threshold=0.05
+
+GiveFocuspoints focuspoints
+
+LogPolar lp
+side=10
+
+SVQ_R vq
+vigilance=0.5
+
+GtkImageViewer v
+
+
+[Links]
+
+c -> g
+g -> gradient
+gradient -> ptcg
+ptcg -> focuspoints
+g -> lp
+focuspoints -> lp
+lp -> vq
+
+g -> v
