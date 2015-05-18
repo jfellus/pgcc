@@ -27,6 +27,7 @@ public:
 	int timescale;
 public:
 	uint used;
+	uint nb_no_async_ins;
 public:
 
 	Module(Script* s, const std::string& cls, const std::string& id);
@@ -43,7 +44,15 @@ public:
 		else return false;
 		return true;
 	}
+	bool use_no_async() {
+		if(++used >= nb_no_async_ins) reset_use();
+		else return false;
+		return true;
+	}
+
+
 	void reset_use() { used = 0; }
+
 
 	inline std::string get_decl_str() {
 		return the_script ?  TOSTRING("Script_" << cls << " " << id << ";") :

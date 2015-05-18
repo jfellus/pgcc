@@ -10,7 +10,7 @@ APT_GET_DEPENDENCIES:=
 
 
 REQUIRED_PACKAGES:= 
-REQUIRED_LIBS:= -lpthread -lboiboites -lgraphounet -ldl
+REQUIRED_LIBS:= -lpthread 
 
 
 INCLUDE_PATHS:=
@@ -39,8 +39,12 @@ DEPENDS = $(OBJS:.o=.d)
 
 
 install:
-	sudo ln -fs `pwd`/resources/pgcc.sh /usr/local/bin/pgcc 
-
+	@ln -fs `pwd`/resources/pgcc.sh /usr/local/bin/pgcc 
+	@ln -fs `pwd`/resources/pgcc_add_project.sh /usr/local/bin/pgcc_add_project 
+	@ln -fs `pwd`/resources/pgcc_resolve_project.sh /usr/local/bin/pgcc_resolve_project 
+	@echo "Installation successful"
+	
+	
 $(EXECUTABLE) : $(OBJS)          
 	@echo "Build executable $@"
 	@$(CXX) $(OBJS) -o $@ $(LDFLAGS) 

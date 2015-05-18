@@ -85,5 +85,24 @@ inline bool file_is_directory(const std::string& filename) {
     return (S_ISDIR (buffer.st_mode));
 }
 
+#define SYSTEM_OUTPUT(x) system_output(TOSTRING(x))
+inline std::string system_output(const std::string& cmd) {
+	FILE* pipe = popen(cmd.c_str(), "r");
+	if (!pipe) return "ERROR";
+	char buffer[262144];
+	std::string data;
+	std::string result;
+	int dist=0;
+	int size;
+	while(!feof(pipe)) {
+		size=(int)fread(buffer,1,262144, pipe);
+		data.resize(data.size()+size);
+		memcpy(&data[dist],buffer,size);
+		dist+=size;
+	}
+	pclose(pipe);
+	return data;
+}
+
 
 #endif /* UTILS_H_ */

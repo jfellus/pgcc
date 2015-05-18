@@ -23,8 +23,12 @@ public:
 
 public:
 	Project(const std::string& filename) : filename(filename) {
-		ld_paths.add(str_dirname(filename));
-		read(filename);
+		if(!file_exists(this->filename)) {
+			this->filename = str_trim(SYSTEM_OUTPUT("pgcc_resolve_project " << filename));
+			if(!file_exists(this->filename)) ERROR("No such project : " << filename);
+		}
+		ld_paths.add(str_dirname(this->filename));
+		read(this->filename);
 	}
 
 	void read(const std::string& filename) {

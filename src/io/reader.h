@@ -13,6 +13,7 @@
 class ScriptReader {
 public:
 	std::string filename;
+	std::string target;
 	Script* script;
 	Module* module;
 	Link* link;
@@ -20,8 +21,14 @@ public:
 public:
 	ScriptReader() {script = 0; module = 0; link = 0;}
 
-	Script* read_script(const std::string& filename) {
+
+	/////////////
+	// READING //
+	/////////////
+
+	Script* read_script(const std::string& filename, const std::string& target = "") {
 		this->filename = filename;
+		this->target = " " + target + " ";
 		std::ifstream f(filename.c_str());
 		if(!f.good()) ERROR("No such script file : " << filename);
 		Script* s = read_script(f);
@@ -48,6 +55,11 @@ public:
 		return script;
 	}
 
+
+	/////////////////////
+	// READ STATEMENTS //
+	/////////////////////
+
 	void read_header_statement(const std::string& line) {
 		if(str_starts_with(line, "Script")) script = new Script(filename, str_trim(str_after(line, "Script")));
 		else if(str_starts_with(line, "Include")) script->add_include(str_trim(str_after(line, "Include")));
@@ -62,24 +74,62 @@ public:
 	}
 
 	void read_module_statement(const std::string& line) {
-		if(str_has(line, "=")) module->set_param(str_trim(str_before(line, "=")), str_trim(str_after(line, "=")));
+		if(str_has(line, "=")) {
+			if(!module) return;
+			module->set_param(str_trim(str_before(line, "=")), str_trim(str_after(line, "=")));
+		}
 		else module = create_module(str_trim(line));
 	}
 
 	void read_links_statement(const std::string& line) {
-		if(str_has(line, "=")) {
+		if(str_has(line, "=") ) {
+			if(!link) return;
 			std::string key = str_trim(str_before(line, "="));
 			std::string val = str_trim(str_after(line, "="));
 			if(key=="type") link->type = val;
 		} else link = create_link(str_trim(line));
 	}
 
+
+	////////////////////////
+	// EXECUTE STATEMENTS //
+	////////////////////////
+
+	bool fit_target(const std::string& target) {
+		if(target.empty() || str_trim(this->target).empty()) return true;
+
+		std::string tok;
+		if(target[0]=='+') {
+			for(std::string rest = str_trim(target.substr(1));!str_trim(rest).empty();rest = str_trim(str_after(rest, " "))) {
+				tok = str_trim(str_before(rest, " "));
+				if(str_has(this->target,tok)) return true;
+			}
+			return false;
+		} else if(target[0]=='-') {
+			for(std::string rest = str_trim(target.substr(1));!str_trim(rest).empty();rest = str_trim(str_after(rest, " "))) {
+				tok = str_trim(str_before(rest, " "));
+				if(str_has(this->target,tok)) return false;
+			}
+			return true;
+		}
+
+		return false;
+	}
+
 	Module* create_module(const std::string& _spec) {
 		std::string spec = _spec;
 		bool bIsScript = spec[0]=='$';
 		if(bIsScript) spec = spec.substr(1);
+
 		std::string cls = str_trim(str_before(spec, " "));
 		std::string id = str_trim(str_after(spec, " "));
+
+		if(str_has(id, " ")) {
+			std::string target = str_trim(str_after(id, " "));
+			id = str_trim(str_before(id, " "));
+			if(!fit_target(target)) return NULL;
+		}
+
 		if(!bIsScript) return script->create_module(cls,id);
 		else return script->create_module_script(cls,id);
 	}
@@ -95,11 +145,11 @@ public:
 
 		Module* src = script->get_module(ssrc);
 		Module* dst = script->get_module(sdst);
-		if(!src) ERROR("No such source module : " << ssrc);
-		if(!dst) ERROR("No such source module : " << sdst);
+		if(!src || !dst) return NULL;
+//		if(!src) ERROR("No such source module : " << ssrc);
+//		if(!dst) ERROR("No such target module : " << sdst);
 
 		Link* l = script->connect(src,srcpin,dst,dstpin, stype);
-		if(stype=="0") l->bNoData = true;
 
 		return l;
 	}

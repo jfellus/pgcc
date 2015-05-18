@@ -32,10 +32,10 @@ public:
 		mkdir(TOSTRING(dir << "/scripts"));
 
 		// Copy core files
-		SYSTEM("cp resources/sync_semaphores.h " << dir << "/utils");
-		SYSTEM("cp resources/README " << dir);
+		SYSTEM("cp -f resources/sync_semaphores.h " << dir << "/utils");
+		SYSTEM("cp -f resources/README " << dir);
 
-		// Set makefile params
+		// Create Makefile
 		create_makefile(TOSTRING(dir << "/Makefile"), "resources/Makefile");
 
 		// Read included functions prototypes
@@ -62,12 +62,13 @@ public:
 
 
 private:
-	int NESTED_LEVEL;
 
 #include "writer_macros.h"
+	int NESTED_LEVEL;
 
 	void create_makefile(const std::string& outfile, const std::string& src) {
 		std::ofstream f(outfile.c_str());
+
 		f << "LD_FLAGS:=";
 		for(uint i=0; i<scripts.size(); i++)
 			for(uint j=0; j<scripts[i]->depends.size(); j++)
@@ -78,7 +79,9 @@ private:
 			for(uint j=0; j<scripts[i]->depends.size(); j++)
 				f << scripts[i]->depends[j]->get_cflags_str();
 		f << "\n";
+
 		copy_file_to(src, f);
+
 		f.close();
 	}
 
@@ -113,14 +116,14 @@ private:
 
 	void write_cpp_script(Script* s, std::ofstream& f) {
 		HEADER();
-		f << "#ifndef __PG_SCRIPT_" << s->name << "_H\n";
-		f << "#define __PG_SCRIPT_" << s->name << "_H\n";
+		f << "#ifndef __PGCC_SCRIPT_" << s->name << "_H\n";
+		f << "#define __PGCC_SCRIPT_" << s->name << "_H\n";
 		________
 		write_script_includes(s, f);
 		________
 		________
 		write_script_implementation(s, f);
-		f << "#endif // __PG_SCRIPT_" << s->name << "_H\n";
+		f << "#endif // __PGCC_SCRIPT_" << s->name << "_H\n";
 	}
 
 	void write_header(std::ofstream& f) {NESTED_LEVEL = 0; copy_file_to("resources/header.txt", f);}
@@ -172,9 +175,9 @@ private:
 
 		while(!bfs.empty()) {
 			Module* m = bfs.front(); bfs.pop_front();
-			if(m->use()) {
+			if(m->use_no_async()) {
 				for(uint i=0; i<m->outs.size(); i++) {
-					bfs.push_back(m->outs[i]->dst);
+					if(!m->outs[i]->is_async()) bfs.push_back(m->outs[i]->dst);
 					if(m->outs[i]->is_sync()) {
 						JJ("SEM_INIT(" << SM(m->id) << ", " << SM(m->outs[i]->dst->id) << ");");
 					}
@@ -200,12 +203,15 @@ private:
 	void write_thread(std::ofstream& f, Thread* thread) {
 		thread->script->reset_use();
 		std::list<Link*> bfs;
-		for(uint i=0;i<thread->script->root_modules.size(); i++) bfs.push_back(new Link(NULL, "", thread->script->root_modules[i],"", ""));
+		for(uint i=0;i<thread->root_modules.size(); i++) {
+			if(thread->root_modules[i]->thread!=thread) continue;
+			bfs.push_back(new Link(NULL, "", thread->root_modules[i],"", ""));
+		}
 
 		while(!bfs.empty()) {
 			Link* l = bfs.front(); bfs.pop_front();
-			if(l->dst->use()) {
-				for(uint i=0; i<l->dst->outs.size(); i++) bfs.push_back(l->dst->outs[i]);
+			if(l->dst->use_no_async()) {
+				for(uint i=0; i<l->dst->outs.size(); i++) if(!l->dst->outs[i]->is_async()) bfs.push_back(l->dst->outs[i]);
 				if(l->dst->thread==thread) {
 					if(l->dst->the_script) write_process_script(f, l);
 					else write_process_module(f, l);

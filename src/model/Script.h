@@ -82,7 +82,7 @@ public:
 		}
 		Link* l = new Link(src,src_pin,dst,dst_pin,link_type);
 		links.add(l);
-		root_modules.remove(dst);
+		if(!l->is_async()) root_modules.remove(dst);
 		return l;
 	}
 
