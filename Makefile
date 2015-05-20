@@ -42,6 +42,9 @@ install:
 	@ln -fs `pwd`/resources/pgcc.sh /usr/local/bin/pgcc 
 	@ln -fs `pwd`/resources/pgcc_add_project.sh /usr/local/bin/pgcc_add_project 
 	@ln -fs `pwd`/resources/pgcc_resolve_project.sh /usr/local/bin/pgcc_resolve_project 
+	@ln -fs `pwd`/resources/pgcc_projects.sh /usr/local/bin/pgcc_projects 
+	@ln -fs `pwd`/resources/pgcc_project_modules.sh /usr/local/bin/pgcc_project_modules 
+	@ln -fs `pwd`/resources/pgcc_module.sh /usr/local/bin/pgcc_module
 	@echo "Installation successful"
 	
 	
