@@ -13,7 +13,6 @@ Module::Module(Script* s, const std::string& cls, const std::string& id) : scrip
 	bProcessable = true;
 	used = 0;
 	thread = 0;
-	timescale = 0;
 	nb_no_async_ins = 0;
 	if(str_starts_with(cls, "In<")) bProcessable = false;
 }

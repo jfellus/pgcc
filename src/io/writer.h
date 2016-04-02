@@ -38,9 +38,6 @@ public:
 		// Create Makefile
 		create_makefile(TOSTRING(dir << "/Makefile"), "resources/Makefile");
 
-		// Read included functions prototypes
-	//	read_prototypes(TOSTRING(dir << "/prototypes.d"));
-
 		// Create CPP files
 		for(uint i=0; i<scripts.size(); i++) {
 			write_cpp_script(scripts[i], TOSTRING(dir << "/scripts/" << scripts[i]->name << ".h"));
@@ -91,6 +88,11 @@ private:
 		INCLUDE_SYS("pthread.h");
 		INCLUDE_SYS("unistd.h");
 		INCLUDE_SYS("pg.h");
+		INCLUDE_SYS("utils/utils.h");
+		INCLUDE("utils/sync_semaphores.h");
+		f << "#ifdef DEBUG\n";
+		INCLUDE_SYS("pgdb.h");
+		f << "#endif\n";
 		________
 		for(uint i=0; i<scripts.size(); i++) INCLUDE("scripts/" << scripts[i]->name << ".h");
 		________
@@ -101,16 +103,23 @@ private:
 		________
 		COMMENT("THREADS");
 		for(uint t=0; t<main_script->threads.size(); t++) {
-			f << "void* f_thread_" << t << "(void*) { try { for(;;) main_script.process_thread_" << t << "(); } catch(std::runtime_error& x) { PRINT_FATAL_ERROR(x.what()); } return 0;}\n";
+			f << "void* f_thread_" << t << "(void*) { try { while(bSIMULATION_RUNNING) main_script.process_thread_" << t << "(); } catch(std::runtime_error& x) { PRINT_FATAL_ERROR(x.what()); } return 0;}\n";
 		}
 		________
 		________
 		COMMENT("MAIN");
 		FUNCTION(int, "main", (void));
+		I(REGISTER_ATEXIT(););
 		I(main_script.init(););
+		f << "#ifdef DEBUG\n";
+		J("pgdb_init_script(NULL, &main_script, \"main_expe\");");
+		I(main_script.init_debug(););
+		J("pgdb_start();");
+		f << "#endif\n";
 		for(uint t=0; t<main_script->threads.size(); t++)
 			J("pthread_t th"<<t<<"; pthread_create(&th" << t << ", 0, f_thread_" << t << ", 0);");
 		for(uint t=0; t<main_script->threads.size(); t++) J("pthread_join(th"<<t<<",0);");
+		J("DBG(\"Bye bye !\");");
 		END_FUNCTION();
 	}
 
@@ -130,8 +139,11 @@ private:
 
 	void write_script_includes(Script* s, std::ofstream& f) {
 		COMMENT("INCLUDES");
-
 		INCLUDE("../utils/sync_semaphores.h");
+		INCLUDE_SYS("pg.h");
+		f << "#ifdef DEBUG\n";
+		INCLUDE_SYS("pgdb.h");
+		f << "#endif\n";
 
 		for(uint i=0; i<s->depends.size(); i++)
 			for(uint j=0; j<s->depends[i]->includes.size(); j++)
@@ -140,7 +152,7 @@ private:
 
 		for(uint i=0; i<s->modules.size(); i++) {
 			if(s->modules[i]->the_script && !str_has(s->modules[i]->id, "#"))
-				INCLUDE(s->modules[i]->id << ".h");
+				INCLUDE(s->modules[i]->cls << ".h");
 		}
 	}
 
@@ -152,6 +164,10 @@ private:
 		CLASS("Script_" << s->name);
 
 		// Members
+		f << "#ifdef DEBUG\n";
+		for(uint i=0; i<s->modules.size(); i++) if(s->modules[i]->has_init() && !s->modules[i]->the_script) J("ModulePlugs* __debug_plugs__" << s->modules[i]->id << ";");
+		f << "#endif\n";
+		________
 		for(uint i=0; i<s->modules.size(); i++) if(s->modules[i]->has_init()) J(s->modules[i]->get_decl_str());
 		________
 		write_semaphores_decls(s, f);
@@ -161,6 +177,7 @@ private:
 		// Constructor
 		CONSTRUCTOR("Script_" << s->name, ());
 		for(uint i=0; i<s->modules.size(); i++) {
+			if(s->modules[i]->is_timescale()) continue;
 			for(std::map<std::string, std::string>::iterator j = s->modules[i]->params.begin(); j!=s->modules[i]->params.end(); j++) {
 				if(isalpha((*j).first[0]))
 					JJ(s->modules[i]->id << "." << (*j).first << " = " << (*j).second << ";");
@@ -189,6 +206,25 @@ private:
 		END_METHOD();
 
 		________
+
+		// Init debug Plugs
+		f << "#ifdef DEBUG\n";
+		METHOD(void, "init_debug", ());
+		for(uint i=0; i<s->modules.size(); i++) {
+			if(str_has(s->modules[i]->id, "#")) continue;
+			if(s->modules[i]->is_timescale()) continue;
+			if(str_has(s->modules[i]->id, ".")) continue;
+			if(s->modules[i]->the_script)
+				 JJ("pgdb_init_script(this, &" << s->modules[i]->id << ",\"" << s->modules[i]->id << "\");");
+			else JJ("__debug_plugs__" << s->modules[i]->id << " = pgdb_init_module(this, &" << s->modules[i]->id << ",\"" << s->modules[i]->id << "\");");
+			if(s->modules[i]->the_script) {
+				JJ(s->modules[i]->id << ".init_debug();");
+			}
+		}
+		END_METHOD();
+		f << "#endif\n";
+		________
+
 		// Threads methods
 		COMMENT("THREADS (" << s->threads.size() << ")");
 		for(uint t=0; t<s->threads.size(); t++) {
@@ -224,8 +260,9 @@ private:
 
 	void write_process_module(std::ofstream& f, Link* l) {
 		Module* m = l->dst;
-		if(m->cls=="$START_TIMESCALE") {write_process_start_timescale(f, l); return; }
-		else if(m->cls=="$END_TIMESCALE") {write_process_end_timescale(f, l); return; }
+		if(m->cls=="FOR") {write_FOR(f, l); return; }
+		else if(m->cls=="ENDFOR") {write_ENDFOR(f, l); return; }
+
 		std::string process = "process";
 		std::string id = m->id;
 		if(str_has(id, "#")) {
@@ -249,7 +286,10 @@ private:
 		// Call process()
 		f << REPEAT_STR("\t", NESTED_LEVEL) << id << (!l->dst_pin.empty() ? "." : "") << l->dst_pin << "." << process << "(";
 		if(l->src) write_process_module_args(f, m);
-		f << ");\n";
+		f << ");";
+
+		// Debug : send plug data
+		if(!str_has(m->id, ".")) JJ("    ___dbs(__debug_plugs__" << m->id << ")"); else f << "\n";
 
 		// Handle sync output links
 		for(uint i=0; i<m->outs.size(); i++) {
@@ -302,14 +342,15 @@ private:
 		}
 	}
 
-	void write_process_start_timescale(std::ofstream& f, Link* l) {
-		std::string v; v += (char)('i'+NESTED_LEVEL);
-		int nb_iterations = l->dst->script->get_timescale_iterations(l->dst->timescale);
-		JJ("for (int " << v << "=0; " << v << "<" << nb_iterations << "; " << v << "++) {");
-		NESTED_LEVEL++;
+	void write_FOR(std::ofstream& f, Link* l) {
+		if(l->dst->params.count("iterations")) {
+			std::string nb_iterations = l->dst->params["iterations"];
+			JJ("for (int " << l->dst->id << "=0; " << l->dst->id << "<" << nb_iterations << "; " << l->dst->id << "++) {");
+			NESTED_LEVEL++;
+		}
 	}
 
-	void write_process_end_timescale(std::ofstream& f, Link* l) {
+	void write_ENDFOR(std::ofstream& f, Link* l) {
 		NESTED_LEVEL--;
 		JJ("}");
 	}

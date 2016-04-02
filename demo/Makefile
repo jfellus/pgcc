@@ -1,9 +1,9 @@
 all: pgcc compile
 
 pgcc: 
-	cd ..; ./pgcc demo/basic_vision.script demo/basic_vision
+	cd ..; ./pgcc demo/ptcg.script demo/ptcg
 	
 compile: pgcc
-	cd basic_vision; make
+	cd ptcg; make
 
 .PHONY: pg

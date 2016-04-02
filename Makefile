@@ -33,8 +33,8 @@ OBJS := $(addprefix bin/,$(SRC:.cpp=.o))
 all: $(EXECUTABLE) 
 $(EXECUTABLE): $(OBJS)
 
-CXXFLAGS := -fPIC -g -rdynamic -Wall -MMD $(addprefix -I,$(INCLUDE_PATHS))
-LDFLAGS := -fPIC -rdynamic 
+CXXFLAGS := -std=c++11 -fPIC -g -rdynamic -Wall -MMD $(addprefix -I,$(INCLUDE_PATHS))
+LDFLAGS := -std=c++11 -fPIC -rdynamic 
 DEPENDS = $(OBJS:.o=.d)    
 
 

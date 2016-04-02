@@ -9,11 +9,21 @@
 #define SYNC_SEMAPHORES_H_
 
 #include <semaphore.h>
+#include <signal.h>
 
 #define SEM_DECL(a,b) sem_t sem_recv_##a##_to_##b; sem_t sem_send_##a##_to_##b
 #define SEM_INIT(a,b) sem_init(&sem_recv_##a##_to_##b, 0, 0); sem_init(&sem_send_##a##_to_##b, 0, 0);
 #define SEM_SEND(a,b) sem_post(&sem_send_##a##_to_##b); sem_wait(&sem_recv_##a##_to_##b);
 #define SEM_RECV(a,b) sem_wait(&sem_send_##a##_to_##b); sem_post(&sem_recv_##a##_to_##b);
+
+
+bool bSIMULATION_RUNNING = true;
+
+inline void _siginthandler(int signo) {
+  if (signo == SIGINT) bSIMULATION_RUNNING = false;
+}
+
+#define REGISTER_ATEXIT() signal(SIGINT,_siginthandler)
 
 
 #endif /* SYNC_SEMAPHORES_H_ */

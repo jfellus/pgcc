@@ -11,6 +11,7 @@
 
 
 extern array<Script*> scripts;
+
 class Script {
 public:
 	std::string filename;
@@ -37,10 +38,6 @@ public:
 
 	void add_include(const std::string& s) {includes.add(s);}
 	void add_depend(const std::string& project) {	depends.add(get_project(project));	}
-	void add_timescale(int id, size_t nb_iterations, int parent = 0) {
-		timescales_iterations[id] = nb_iterations;
-		timescales_parent[id] = parent;
-	}
 
 	Module* get_module(const std::string& id) {
 		for(size_t i = 0; i<modules.size(); i++) if(modules[i]->id==id) return modules[i];
@@ -146,50 +143,6 @@ public:
 	}
 
 
-
-	////////////////
-	// TIMESCALES //
-	////////////////
-
-private:
-	std::map<int,int> timescales_parent;
-	std::map<int,size_t> timescales_iterations;
-public:
-
-	void timescale_set_parent(int ts_child, int ts_parent) {timescales_parent[ts_child] = ts_parent;}
-
-	bool is_timescale_child(int ts1, int ts2) {
-		int t = ts1;
-		while(timescales_parent.count(t)) {
-			t = timescales_parent[t];
-			if(t==ts2) return true;
-		}
-		return false;
-	}
-
-	size_t get_timescale_iterations(int ts) { return timescales_iterations[ts]; }
-
-	inline Module* get_timescale_start_module(Module* m) { return get_module(TOSTRING("$START_TIMESCALE_" << m->timescale << "#" << m->get_thread_id())); }
-	inline Module* get_timescale_end_module(Module* m) { return get_module(TOSTRING("$END_TIMESCALE_" << m->timescale << "#" << m->get_thread_id())); }
-
-	void compute_timescales() {
-		for(uint t=0; t<threads.size(); t++) threads[t]->compute_timescales();
-		for(uint i=0; i<links.size(); i++) {
-			Link* l = links[i];
-			if(l->src->timescale == l->dst->timescale) continue;
-			if(!l->src->thread || !l->dst->thread) continue;
-			if(l->is_timescale_link()) continue;
-			if(is_timescale_child(l->dst->timescale,l->src->timescale)) {
-				Module* ts_start = get_timescale_start_module(l->dst);
-				Link* link = connect(l->src, ts_start, l->type);
-				link->bNoData = true;
-			} else {
-				Module* ts_end = get_timescale_end_module(l->src);
-				Link* link = connect(ts_end, l->dst, l->type);
-				link->bNoData = true;
-			}
-		}
-	}
 
 
 	/////////////////

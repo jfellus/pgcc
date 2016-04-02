@@ -24,7 +24,7 @@ public:
 
 	Thread* thread;
 	bool bProcessable;
-	int timescale;
+
 public:
 	uint used;
 	uint nb_no_async_ins;
@@ -33,11 +33,8 @@ public:
 	Module(Script* s, const std::string& cls, const std::string& id);
 
 	void set_param(const std::string& key, const std::string& value) {
-		if(key=="timescale") set_timescale(TOINT(value));
-		else params[key] = value;
+		params[key] = value;
 	}
-
-	void set_timescale(int ts) {timescale = ts;}
 
 	bool use() {
 		if(++used >= ins.size()) reset_use();
@@ -61,11 +58,10 @@ public:
 
 	inline int get_thread_id() { return thread ? thread->id : -1; }
 
-	inline bool has_init() { return isalpha(cls[0]); }
+	inline bool has_init() { return isalpha(cls[0]) && !is_timescale(); }
 	inline bool is_processable() { return bProcessable; }
 	inline bool needs_params() {return !the_script; }
-
-	inline bool is_timescale() {return cls[0]=='$';}
+	inline bool is_timescale() {return cls=="FOR" || cls=="ENDFOR";}
 
 	inline std::string get_special_process_statement() {
 		if(str_starts_with(cls, "_expr<")) {

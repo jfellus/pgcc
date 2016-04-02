@@ -1,0 +1,55 @@
+Script ptcg
+Depends /home/jfellus/workspace/pg_vision/pg_vision.pgproject
+Depends /home/jfellus/workspace/pg_basics/pg_basics.pgproject
+Depends /home/jfellus/workspace/pg_gtk/pg_gtk.pgproject
+Depends /home/jfellus/workspace/pg_learning/pg_learning.pgproject
+Depends /home/jfellus/workspace/pg_algebra/pg_algebra.pgproject
+
+[Modules]
+Camera cam
+@x = 200.39285714285705
+@y = 210.92857142857133
+path = "/dev/video1"
+
+Grayscale g
+@x = 302
+@y = 305
+
+GtkImageOverlay v
+@x = 589.6785714285709
+@y = 216.85714285714295
+
+Gradient grad
+@x = 365
+@y = 306
+alpha = 0.8
+
+Ptcg ptcg
+@x = 426.64285714285705
+@y = 253.8571428571428
+theta1 = 3
+theta2 = 1.5
+mask_radius = 4
+competition_radius = 30
+threshold = 0.01
+
+GiveFocuspoints focuspoints
+@x = 467
+@y = 157
+threshold = 0
+
+
+[Links]
+cam -> g
+
+g -> grad
+
+grad -> ptcg
+
+cam -> v
+
+ptcg -> focuspoints
+
+focuspoints -> v
+
+

@@ -28,17 +28,6 @@ public:
 	void consume() {isConsumed = true;}
 	void reset_consume() {isConsumed = false;}
 
-
-
-	////////////////
-	// TIMESCALES //
-	////////////////
-
-	Module* get_timescale_start_module(Module* m);
-	Module* get_timescale_end_module(Module* m);
-
-	void compute_timescales();
-
 };
 
 

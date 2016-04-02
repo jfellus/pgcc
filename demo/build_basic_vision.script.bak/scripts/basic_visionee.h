@@ -72,12 +72,12 @@ public:
 	SigmaPi PrPh;
 	RowVector place_vector;
 	SVQ SVQ_PlaceCells;
-	GtkPlot ViewerPlaceCells;
+	GtkImageOverlayText ViewerLandmarks;
 
 
 
 	Script_basic_visionee() {
-		camera.path = "/dev/video0";
+		camera.path = "/dev/video1";
 		gradient.alpha = 0.8;
 		ptcg.competition_radius = 30;
 		ptcg.mask_radius = 4;
@@ -89,7 +89,6 @@ public:
 		kmax.K = 1;
 		theta.nbNeurons = 30;
 		SVQ_PlaceCells.K = 3;
-		ViewerPlaceCells.w = 20;
 	}
 
 	void init() {
@@ -103,10 +102,10 @@ public:
 		L2_normalization.init();
 		SVQ_Landmarks.init();
 		kmax.init();
+		ViewerLandmarks.init();
 		PrPh.init();
 		place_vector.init();
 		SVQ_PlaceCells.init();
-		ViewerPlaceCells.init();
 	}
 
 
@@ -125,10 +124,10 @@ public:
 		L2_normalization.process(logpol);
 		SVQ_Landmarks.process(L2_normalization);
 		kmax.process(SVQ_Landmarks);
+		ViewerLandmarks.process(grayscale, SVQ_Landmarks, focuspoints);
 		PrPh.process(kmax, theta);
 		place_vector.process(PrPh);
 		SVQ_PlaceCells.process(place_vector);
-		ViewerPlaceCells.process(SVQ_PlaceCells);
 	}
 
 };

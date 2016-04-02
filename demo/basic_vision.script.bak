@@ -9,7 +9,7 @@ Depends /home/jfellus/workspace/pg_algebra/pg_algebra.pgproject
 Camera camera
 @x = 42.97090956985642
 @y = 90.09426984253639
-path = "/dev/video0"
+path = "/dev/video1"
 
 Grayscale grayscale
 @x = 115.50875399144866
@@ -31,7 +31,7 @@ threshold = 0.01
 
 GiveFocuspoints focuspoints
 @x = 240.31342238467678
-@y = 41.07540311497465
+@y = 42.07540311497465
 threshold = 0
 
 LogPolar logpol
@@ -70,10 +70,9 @@ SVQ SVQ_PlaceCells
 @y = 65.91538991584505
 K = 3
 
-GtkPlot ViewerPlaceCells
-@x = 797.7973675715688
-@y = 65.50918909756864
-w = 20
+GtkImageOverlayText ViewerLandmarks
+@x = 547.7973675715688
+@y = 258.50918909756865
 
 
 [Links]
@@ -105,6 +104,10 @@ PrPh -> place_vector
 
 place_vector -> SVQ_PlaceCells
 
-SVQ_PlaceCells -> ViewerPlaceCells
+grayscale -> ViewerLandmarks
+
+SVQ_Landmarks -> ViewerLandmarks
+
+focuspoints -> ViewerLandmarks
 
 

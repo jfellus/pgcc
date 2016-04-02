@@ -29,6 +29,7 @@ public:
 	Script* read_script(const std::string& filename, const std::string& target = "") {
 		this->filename = filename;
 		this->target = " " + target + " ";
+
 		std::ifstream f(filename.c_str());
 		if(!f.good()) ERROR("No such script file : " << filename);
 		Script* s = read_script(f);
@@ -50,7 +51,6 @@ public:
 		}
 
 		script->compute_threads();
-		script->compute_timescales();
 
 		return script;
 	}
@@ -64,13 +64,6 @@ public:
 		if(str_starts_with(line, "Script")) script = new Script(filename, str_trim(str_after(line, "Script")));
 		else if(str_starts_with(line, "Include")) script->add_include(str_trim(str_after(line, "Include")));
 		else if(str_starts_with(line, "Depends")) script->add_depend(str_trim(str_after(line, "Depends")));
-		else if(str_starts_with(line, "Timescale")) {
-			std::string params = str_trim(str_after(line, "Timescale"));
-			int id = TOINT(str_trim(str_before(params, " ")));
-			size_t nb = TOINT(str_trim(str_before(str_after(params, " "), " ")).substr(1));
-			int parent = TOINT(str_trim(str_after(str_after(params, " "), " ")));
-			script->add_timescale(id, nb, parent);
-		}
 	}
 
 	void read_module_statement(const std::string& line) {
@@ -149,9 +142,7 @@ public:
 //		if(!src) ERROR("No such source module : " << ssrc);
 //		if(!dst) ERROR("No such target module : " << sdst);
 
-		Link* l = script->connect(src,srcpin,dst,dstpin, stype);
-
-		return l;
+		return script->connect(src,srcpin,dst,dstpin, stype);
 	}
 
 };

@@ -18,8 +18,8 @@
 
 
 void usage() {
-	DBG("pgcc - Promethe-to-GCC Neural Nets compiler");
-	DBG("Usage : pgcc [-v] <main_script_file> <output_directory>");
+	DBG("ascc - Autonomous System C Compiler");
+	DBG("Usage : ascc [-v] <main_script_file> <output_directory>");
 	exit(1);
 }
 
